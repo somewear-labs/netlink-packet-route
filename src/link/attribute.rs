@@ -740,18 +740,21 @@ impl<'a, T: AsRef<[u8]> + ?Sized>
                 WirelessEvent::parse(payload)
                     .context("invalid IFLA_WIRELESS value")?,
             ),
-            IFLA_PARENT_DEV_NAME => Self::ParentDevName(
-                parse_string(payload)
-                    .context("invalid IFLA_PARENT_DEV_NAME value")?,
-            ),
-            IFLA_PARENT_DEV_BUS_NAME => Self::ParentDevBusName(
-                parse_string(payload)
-                    .context("invalid IFLA_PARENT_DEV_BUS_NAME value")?,
-            ),
-            IFLA_GRO_MAX_SIZE => Self::GroMaxSize(
-                parse_u32(payload)
-                    .context("invalid IFLA_GRO_MAX_SIZE value")?,
-            ),
+            // These break in routerOS because they repurposed them. We are not interested in these
+            // so we ignore them for now.
+            //
+            // IFLA_PARENT_DEV_NAME => Self::ParentDevName(
+            //     parse_string(payload)
+            //         .context("invalid IFLA_PARENT_DEV_NAME value")?,
+            // ),
+            // IFLA_PARENT_DEV_BUS_NAME => Self::ParentDevBusName(
+            //     parse_string(payload)
+            //         .context("invalid IFLA_PARENT_DEV_BUS_NAME value")?,
+            // ),
+            // IFLA_GRO_MAX_SIZE => Self::GroMaxSize(
+            //     parse_u32(payload)
+            //         .context("invalid IFLA_GRO_MAX_SIZE value")?,
+            // ),
             IFLA_TSO_MAX_SIZE => Self::TsoMaxSize(
                 parse_u32(payload)
                     .context("invalid IFLA_TSO_MAX_SIZE value")?,
@@ -798,7 +801,7 @@ impl<'a, T: AsRef<[u8]> + ?Sized>
             }
             kind => Self::Other(
                 DefaultNla::parse(buf)
-                    .context(format!("unknown NLA type {kind}"))?,
+                    .with_context(|| format!("unknown NLA type {kind}"))?,
             ),
         })
     }
